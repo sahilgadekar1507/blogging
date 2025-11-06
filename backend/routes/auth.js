@@ -11,9 +11,9 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 const ACCESS_TOKEN_EXP = process.env.ACCESS_TOKEN_EXP || "15m";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "defaultsecret";
-const REFRESH_EXP = process.env.JWT_SECRET || "7d";
+const REFRESH_EXP = process.env.REFRESH_EXP || "7d";
 
-let refreshToken = [];
+let refreshTokens = [];
 
 const generateTokens = (user) => {
     const payload = {user: {id: user.id}};
@@ -71,7 +71,7 @@ router.post(
             // refreshToken.push(refreshToken);
             
 
-            res.status(201).json({token, message: "User registred successfully!",
+            res.status(201).json({message: "User registred successfully!",
                 ...tokens
             });
         } catch (err) {
@@ -111,11 +111,45 @@ router.post(
 
             const tokens = generateTokens(user);
 
-            res.json({token, message: "login successful!", ...tokens});
+            res.json({message: "login successful!", ...tokens});
         } catch (error) {
             console.error(error.message);
             res.status(500).json({message: "server error"});
         }
+    }
+);
+
+router.post("/refresh",
+    async (req, res) => {
+        const {refreshToken} = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({message: "refresh token required!"});
+        };
+
+        if (!refreshTokens.includes(refreshToken)) {
+            return res.status(403).json({message: "invalid refresh token!"});
+        }
+
+        try {
+            const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+            const payload = {user: {id: decoded.user.id}};
+
+            const accessToken = jwt.sign(payload, JWT_SECRET, {expiresIn: ACCESS_TOKEN_EXP});
+
+            res.json({accessToken});
+        } catch (error) {
+            console.error(error.message);
+            res.status(403).json({message: "invalid or expired refresh token"});
+        }
+    }
+);
+
+router.post("/logout",
+    (req, res) => {
+        const {refreshToken} = req.body;
+        refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+        res.json({message: "logged out successfully!"});
     }
 );
 
