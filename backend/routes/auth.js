@@ -9,6 +9,22 @@ dotenv.config();
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
+const ACCESS_TOKEN_EXP = process.env.ACCESS_TOKEN_EXP || "15m";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "defaultsecret";
+const REFRESH_EXP = process.env.JWT_SECRET || "7d";
+
+let refreshToken = [];
+
+const generateTokens = (user) => {
+    const payload = {user: {id: user.id}};
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, {expiresIn: ACCESS_TOKEN_EXP});
+    const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, {expiresIn: REFRESH_EXP});
+
+    refreshTokens.push(refreshToken);
+
+    return {accessToken, refreshToken}
+}
 
 router.post(
     "/register", 
@@ -45,10 +61,19 @@ router.post(
             await user.save();
 
             // create JWT token
-            const payload = {user: {id: user.id}};
-            const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"});
+            // const payload = {user: {id: user.id}};
+            // const token = jwt.sign(payload, JWT_SECRET, {expiresIn: ACCESS_TOKEN_EXP});
 
-            res.status(201).json({token, message: "User registred successfully!"});
+            const token = generateTokens(user)
+
+            // const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, {expiresIn: REFRESH_EXP});
+
+            // refreshToken.push(refreshToken);
+            
+
+            res.status(201).json({token, message: "User registred successfully!",
+                ...tokens
+            });
         } catch (err) {
             console.log(err.message);
             res.status(500).json({message: "Server error!"})
@@ -81,10 +106,12 @@ router.post(
                 return res.status(400).json({message: "invalid credentials!"});
             }
 
-            const payload = {user: {id: user.id}};
-            const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"});
+            // const payload = {user: {id: user.id}};
+            // const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"});
 
-            res.json({token, message: "login successful!"});
+            const tokens = generateTokens(user);
+
+            res.json({token, message: "login successful!", ...tokens});
         } catch (error) {
             console.error(error.message);
             res.status(500).json({message: "server error"});
