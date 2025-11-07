@@ -72,7 +72,7 @@ router.post(
             
 
             res.status(201).json({message: "User registred successfully!",
-                ...tokens
+                ...token
             });
         } catch (err) {
             console.log(err.message);

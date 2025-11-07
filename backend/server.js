@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js'
+import blogRoutes from './routes/blog.js';
 
 // Loads .env
 dotenv.config();
@@ -17,6 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/blogs", blogRoutes);
 
 // Routes
 app.get('/', (req, res) => {
