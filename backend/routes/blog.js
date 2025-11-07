@@ -4,7 +4,7 @@ import auth from '../middleware/auth.js';
 
 const router = express.Router();    
 router.get("/", async (req, res) => {
-    console.log("✅ SEARCH ROUTE LOADED - OPTIMIZED");
+
 
     try {
         const { search } = req.query;
@@ -17,25 +17,17 @@ router.get("/", async (req, res) => {
 
         const searchRegex = new RegExp(search, "i");
 
-        // --- 1. Search by Text Index (title and content) ---
         let contentMatchBlogs = await Blog.find(
             { $text: { $search: search } },
-            { score: { $meta: "textScore" } } // Optional: get score for sorting
+            { score: { $meta: "textScore" } } // get score for sorting
         )
-        .sort({ score: { $meta: "textScore" } }) // Optional: sort by relevance
+        .sort({ score: { $meta: "textScore" } }) // sort by relevance
         .populate("author", "name email");
 
-
-        // --- 2. Search by Tags (using regex on the array) ---
-        // We use a separate query because $text doesn't handle array matching well
         let tagMatchBlogs = await Blog.find({ 
             tags: { $regex: searchRegex } 
         }).populate("author", "name email");
 
-
-        // --- 3. Search by Author Name (requires querying the 'User' model indirectly) ---
-        // Since we cannot query populated fields directly in a single query,
-        // we'll query ALL blogs and filter by author name in JavaScript (safely).
         const allBlogsForAuthorCheck = await Blog.find({}).populate("author", "name email");
 
         const authorMatchBlogs = allBlogsForAuthorCheck.filter((b) => {
@@ -68,7 +60,7 @@ router.get("/", async (req, res) => {
         return res.json(finalBlogs);
 
     } catch (error) {
-        console.error("Search Error:", error);
+        // console.error("Search Error:", error);
         res.status(500).json({ message: "Server error during search" });
     }
 });
@@ -87,7 +79,7 @@ router.post("/", auth, async (req, res) => {
         
         res.status(201).json({msssage: "Blog Created!", blog});
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).json({message: "Server error!"});
     }
 });

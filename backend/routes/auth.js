@@ -82,42 +82,51 @@ router.post(
 );
 
 router.post(
-    "/login", 
+    "/login",
     [
-        body("email", "please include valid email!").isEmail(),
-        body("password", "password is required!").exists(),
+      body("email", "please include valid email!").isEmail(),
+      body("password", "password is required!").exists(),
     ],
     async (req, res) => {
-        const errors = validationResult(req);
-        if(!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()});
-        };
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
-        const {email, password} = req.body; 
+      const { email, password } = req.body;
 
-        try {
-            const user = await User.findOne({email});
-            if (!user) {
-                return res.status(400).json({message: "invalid credentials!"});
-            };
-
-            const isMatch = await bcrypt.compare(password, user.password);
-            if(!isMatch){
-                return res.status(400).json({message: "invalid credentials!"});
-            }
-
-            // const payload = {user: {id: user.id}};
-            // const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"});
-
-            const tokens = generateTokens(user);
-
-            res.json({message: "login successful!", ...tokens});
-        } catch (error) {
-            console.error(error.message);
-            res.status(500).json({message: "server error"});
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return res.status(400).json({ message: "invalid credentials!" });
         }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "invalid credentials!" });
+        }
+
+        const tokens = generateTokens(user);
+
+        // ✅ FIXED RESPONSE
+        res.json({
+          message: "login successful!",
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email
+          }
+        });
+
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "server error" });
+      }
     }
 );
+
 
 router.post("/refresh",
     async (req, res) => {
