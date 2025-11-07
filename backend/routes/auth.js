@@ -8,9 +8,9 @@ import User from "../models/User.js";
 dotenv.config();
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
+const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXP = process.env.ACCESS_TOKEN_EXP || "15m";
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "defaultsecret";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const REFRESH_EXP = process.env.REFRESH_EXP || "7d";
 
 let refreshTokens = [];
