@@ -15,15 +15,12 @@ export default function Navbar() {
 
   return (
     <nav className="w-full p-4 bg-gray-600 text-white flex justify-between items-center">
-      {/* Logo */}
       <Link to="/" className="text-xl font-bold">
         Blog App
       </Link>
 
-      {/* Right Side Buttons */}
-      <div className="flex items-center gap-4">
 
-        {/* ✅ If NO USER → Show Login + Register */}
+      <div className="flex items-center gap-4">
         {!user && (
           <>
             <Link to="/login" className="hover:underline">
@@ -35,7 +32,6 @@ export default function Navbar() {
           </>
         )}
 
-        {/* ✅ If USER LOGGED IN → Show Profile + Logout */}
         {user && (
           <>
            <Link
@@ -47,10 +43,7 @@ export default function Navbar() {
             <Link to="/profile" className="hover:underline">
               Profile
             </Link>
-               
-
-            
-
+    
             <button
               onClick={handleLogout}
               className="bg-gray-500 px-3 py-1 rounded hover:bg-gray-400"
